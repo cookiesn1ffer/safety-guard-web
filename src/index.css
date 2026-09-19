@@ -196,11 +196,11 @@ h1 { font: 800 42px/1.08 'Manrope', sans-serif; letter-spacing: -.045em; margin:
 
 /* Subtle glass treatment: restrained enough for readability, visible in both themes */
 :root {
-  --scanner-glass-bg: rgba(238, 245, 235, .82);
+  --scanner-glass-bg: rgba(255, 255, 255, .68);
   --scanner-glass-inner: rgba(255, 255, 255, .58);
 }
 .dark {
-  --scanner-glass-bg: rgba(29, 39, 31, .84);
+  --scanner-glass-bg: rgba(32, 37, 34, .72);
   --scanner-glass-inner: rgba(17, 24, 20, .58);
 }
 .scanner-section-charcoal,
@@ -235,72 +235,96 @@ h1 { font: 800 42px/1.08 'Manrope', sans-serif; letter-spacing: -.045em; margin:
 .dark .page-content-glass { background: var(--scanner-glass-bg); border-color: var(--scanner-section-border); }
 .dark .panel, .dark .stat-card, .dark .gateway-card { background: var(--scanner-glass-inner); }
 
-/* Keep one green page surface instead of stacking white/navy cards inside it. */
-.page-content-glass .page-flat-surface,
-.page-content-glass .panel,
-.page-content-glass .stat-card {
+/* Admin Console only: one quiet security surface, thin dividers, no nested card stacks */
+.admin-content-surface {
+  --admin-surface: rgba(238, 244, 238, .78);
+  --admin-surface-border: #d8e3d8;
+  --admin-divider: rgba(113, 139, 116, .22);
+  --admin-text: #26342b;
+  --admin-muted: #758278;
+  --admin-soft: rgba(255, 255, 255, .48);
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-surface-border);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 0 0 1px rgba(118, 154, 105, .07), 0 16px 36px rgba(42, 66, 48, .08);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  backdrop-filter: blur(14px) saturate(115%);
+}
+.dark .admin-content-surface {
+  --admin-surface: rgba(31, 38, 33, .84);
+  --admin-surface-border: #3b4a3d;
+  --admin-divider: rgba(145, 174, 139, .2);
+  --admin-text: #edf3eb;
+  --admin-muted: #9dab9c;
+  --admin-soft: rgba(20, 27, 23, .44);
+  box-shadow: 0 0 0 1px rgba(134, 166, 109, .1), 0 16px 36px rgba(15, 23, 17, .2);
+}
+.admin-content-surface .stat-grid { gap: 0; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 1px solid var(--admin-divider); }
+.admin-content-surface .stat-card,
+.admin-content-surface .panel,
+.admin-content-surface .list-panel,
+.admin-content-surface .settings-panel {
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  padding: 18px 20px;
 }
-.page-content-glass .page-result-surface {
-  border-top: 1px solid color-mix(in srgb, var(--scanner-focus) 32%, transparent) !important;
-}
-.page-content-glass .page-flat-surface:hover {
-  background: color-mix(in srgb, var(--scanner-focus) 6%, transparent) !important;
-}
-.dark .page-content-glass .page-flat-surface,
-.dark .page-content-glass .panel,
-.dark .page-content-glass .stat-card {
-  background: transparent !important;
+.admin-content-surface .stat-card { border-right: 1px solid var(--admin-divider) !important; }
+.admin-content-surface .stat-card:last-child { border-right: 0 !important; }
+.admin-content-surface .stat-card strong,
+.admin-content-surface .panel h2,
+.admin-content-surface .setting-row strong,
+.admin-content-surface td strong { color: var(--admin-text); }
+.admin-content-surface .stat-card span,
+.admin-content-surface .stat-card small,
+.admin-content-surface .setting-row p,
+.admin-content-surface td,
+.admin-content-surface td span { color: var(--admin-muted); }
+.admin-content-surface .stat-icon { width: 28px; height: 28px; border-radius: 8px; margin-bottom: 11px; }
+.admin-content-surface .admin-grid { gap: 0; }
+.admin-content-surface .admin-grid > .panel:first-child { border-right: 1px solid var(--admin-divider) !important; }
+.admin-content-surface .panel-header { margin-bottom: 15px; }
+.admin-content-surface .activity-row,
+.admin-content-surface .review-item,
+.admin-content-surface .list-row,
+.admin-content-surface .setting-row { border-color: var(--admin-divider); }
+.admin-content-surface .domain-favicon,
+.admin-content-surface .review-symbol { width: 28px; height: 28px; border-radius: 7px; }
+.admin-content-surface .wide-button { width: auto; min-width: 170px; background: transparent; border: 1px solid var(--admin-divider); color: #668b2a; }
+.admin-content-surface .wide-button:hover { background: rgba(122, 163, 87, .1); border-color: #9dbc81; }
+.admin-content-surface .mail-toolbar { padding-bottom: 16px; margin-bottom: 0; border-bottom: 1px solid var(--admin-divider); }
+.admin-content-surface .search-field,
+.admin-content-surface .mail-toolbar select,
+.admin-content-surface .secondary-button { background: var(--admin-soft); border-color: var(--admin-divider); }
+.admin-content-surface .table-panel { padding: 0; overflow-x: auto; }
+.admin-content-surface th,
+.admin-content-surface td { border-color: var(--admin-divider); padding: 14px 12px; }
+.admin-content-surface th:first-child,
+.admin-content-surface td:first-child { padding-left: 0; }
+.admin-content-surface th:last-child,
+.admin-content-surface td:last-child { padding-right: 0; }
+.admin-content-surface .list-grid { gap: 0; }
+.admin-content-surface .list-grid > .list-panel:first-child { border-right: 1px solid var(--admin-divider) !important; }
+.admin-content-surface .list-row { padding: 13px 0; }
+.admin-content-surface .toggle { border: 1px solid var(--admin-divider); }
+.admin-content-surface .toggle-on { background: #8bad61; border-color: #8bad61; }
+.admin-content-surface .toggle span { background: #fff; }
+.admin-content-surface .status-pill { border: 1px solid rgba(108, 134, 102, .18); }
+@media (max-width: 720px) {
+  .admin-content-surface { padding: 12px; }
+  .admin-content-surface .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-content-surface .stat-card { border-right: 0 !important; border-bottom: 1px solid var(--admin-divider) !important; }
+  .admin-content-surface .stat-card:nth-last-child(-n+2) { border-bottom: 0 !important; }
+  .admin-content-surface .admin-grid,
+  .admin-content-surface .list-grid { grid-template-columns: 1fr; }
+  .admin-content-surface .admin-grid > .panel:first-child,
+  .admin-content-surface .list-grid > .list-panel:first-child { border-right: 0 !important; border-bottom: 1px solid var(--admin-divider) !important; }
+  .admin-content-surface .panel, .admin-content-surface .list-panel, .admin-content-surface .settings-panel { padding: 18px 8px; }
 }
 
-/* Separate content without drawing more cards inside the single green surface. */
-.page-content-glass .stat-grid,
-.page-content-glass .admin-grid,
-.page-content-glass .list-grid,
-.page-content-glass .table-panel {
-  border: 0;
-}
-.page-content-glass .stat-card + .stat-card,
-.page-content-glass .admin-grid > .panel + .panel,
-.page-content-glass .list-grid > .panel + .panel {
-  border-left: 1px solid color-mix(in srgb, var(--scanner-focus) 26%, transparent) !important;
-}
-.page-content-glass .table-panel {
-  border-radius: 0;
-  box-shadow: none;
-}
-.page-content-glass .space-y-3 > .page-flat-surface {
-  border-top: 1px solid color-mix(in srgb, var(--scanner-focus) 22%, transparent) !important;
-}
-.page-content-glass .grid > .page-flat-surface {
-  border-top: 1px solid color-mix(in srgb, var(--scanner-focus) 22%, transparent) !important;
-}
-
-/* Keep admin controls readable against the green page surface in both themes. */
-.page-content-glass .wide-button {
-  background: color-mix(in srgb, var(--scanner-focus) 10%, white);
-  border-color: color-mix(in srgb, var(--scanner-focus) 22%, transparent);
-}
-.dark .page-content-glass .wide-button {
-  background: color-mix(in srgb, var(--scanner-focus) 10%, #141b16);
-  border-color: color-mix(in srgb, var(--scanner-focus) 24%, transparent);
-  color: #dce5dc;
-}
-.dark .mail-toolbar .search-field,
-.dark .mail-toolbar select {
-  background: rgba(16, 23, 18, .76);
-  border-color: color-mix(in srgb, var(--scanner-focus) 28%, transparent);
-  color: #dce5dc;
-  color-scheme: dark;
-}
-.dark .mail-toolbar select option { background: #151d17; color: #dce5dc; }
-
-/* The navigation remains available while long pages scroll. */
+/* Keep the workspace navigation usable on long and narrow screens. */
 .app-sidebar {
   position: sticky;
   top: 0;
@@ -311,6 +335,7 @@ h1 { font: 800 42px/1.08 'Manrope', sans-serif; letter-spacing: -.045em; margin:
 .app-sidebar-collapsed .brand-lockup { justify-content: center; padding-left: 0; }
 .app-sidebar-collapsed .sidebar-link { justify-content: center; padding-inline: 0; }
 .app-sidebar-collapsed .sidebar-collapse { justify-content: center; }
+.app-sidebar-collapsed .sidebar-section-label { display: none; }
 .sidebar-collapse { min-height: 38px; flex-shrink: 0; }
 .mobile-backdrop { display: none; }
 
@@ -341,10 +366,34 @@ h1 { font: 800 42px/1.08 'Manrope', sans-serif; letter-spacing: -.045em; margin:
     background: rgba(5, 9, 7, .56);
     backdrop-filter: blur(2px);
   }
-  .page-content-glass .stat-card + .stat-card,
-  .page-content-glass .admin-grid > .panel + .panel,
-  .page-content-glass .list-grid > .panel + .panel {
-    border-left: 0 !important;
-    border-top: 1px solid color-mix(in srgb, var(--scanner-focus) 26%, transparent) !important;
-  }
+}
+
+/* Public workspace pages use the green surface as the only card. */
+.page-content-glass .page-flat-surface {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.page-content-glass .space-y-6 > .page-flat-surface:first-child {
+  border-bottom: 1px solid color-mix(in srgb, var(--scanner-focus) 28%, transparent) !important;
+  padding-bottom: 24px;
+}
+.page-content-glass .space-y-3 > .page-flat-surface,
+.page-content-glass .grid > .page-flat-surface {
+  border-top: 1px solid color-mix(in srgb, var(--scanner-focus) 22%, transparent) !important;
+}
+.page-content-glass .page-flat-surface ul > li {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding-inline: 0;
+}
+.page-content-glass .page-flat-surface ul > li + li {
+  border-top: 1px solid color-mix(in srgb, var(--scanner-focus) 20%, transparent) !important;
+}
+.page-content-glass .page-flat-surface:hover {
+  background: color-mix(in srgb, var(--scanner-focus) 5%, transparent) !important;
 }
