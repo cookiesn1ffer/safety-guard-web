@@ -84,6 +84,8 @@ function App() {
   const [history, setHistory] = useState<AnalysisResult[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [selectedUrl, setSelectedUrl] = useState('');
   const [gatewayState, setGatewayState] = useState<GatewayState>('caution');
   const [gatewayChecked, setGatewayChecked] = useState(false);
 
@@ -100,6 +102,7 @@ function App() {
 
   const selectPage = (next: Page) => {
     setPage(next);
+    setMobileOpen(false);
     if (next !== 'gateway') setGatewayChecked(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -120,7 +123,7 @@ function App() {
 
   return (
     <div className="app-frame">
-      <aside className={`app-sidebar ${sidebarOpen ? '' : 'app-sidebar-collapsed'}`}>
+      <aside id="workspace-navigation" className={`app-sidebar ${mobileOpen ? 'mobile-open' : ''} ${sidebarOpen ? '' : 'app-sidebar-collapsed'}`}>
         <div className="brand-lockup" onClick={() => selectPage('scanner')} role="button" tabIndex={0}>
           <div className="brand-mark"><ShieldCheck size={20} /></div>
           {sidebarOpen && <div><strong>Safety Guard</strong><span>Online protection</span></div>}
@@ -147,19 +150,20 @@ function App() {
 
         <div className="sidebar-spacer" />
         {sidebarOpen && <div className="sidebar-tip"><Shield size={17} /><div><strong>Your data stays private</strong><span>Scans are stored locally in this demo.</span></div></div>}
-        <button className="sidebar-collapse" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}<span>{sidebarOpen ? 'Collapse menu' : 'Expand menu'}</span></button>
+        <button className="sidebar-collapse" aria-label={sidebarOpen ? 'Collapse menu' : 'Expand menu'} title={sidebarOpen ? 'Collapse menu' : 'Expand menu'} onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}<span>{sidebarOpen ? 'Collapse menu' : 'Expand menu'}</span></button>
       </aside>
 
+      {mobileOpen && <button className="mobile-backdrop" aria-label="Close navigation" onClick={() => setMobileOpen(false)} />}
       <div className="app-main">
         <header className="topbar">
-          <div className="topbar-left"><button className="mobile-menu" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={20} /></button><span className="breadcrumb">{isAdmin ? 'Admin console' : page === 'gateway' ? 'Protected link' : 'Public workspace'}</span><ChevronRight size={14} /><strong>{pageTitle(page)}</strong></div>
+          <div className="topbar-left"><button className="mobile-menu" aria-label="Toggle navigation" aria-controls="workspace-navigation" aria-expanded={mobileOpen} onClick={() => { setSidebarOpen(true); setMobileOpen(!mobileOpen); }}><Menu size={20} /></button><span className="breadcrumb">{isAdmin ? 'Admin console' : page === 'gateway' ? 'Protected link' : 'Public workspace'}</span><ChevronRight size={14} /><strong>{pageTitle(page)}</strong></div>
           <div className="topbar-actions"><span className="service-status"><i /> Protection active</span><button className="icon-button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label="Toggle theme">{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button><div className="avatar">AM</div></div>
         </header>
 
         <main className="content-wrap">
-          {page === 'scanner' && <ScannerPage currentAnalysis={currentAnalysis} onAnalysis={handleAnalysis} onScanAnother={() => setCurrentAnalysis(null)} onInspect={() => selectPage('links')} />}
-          {page === 'links' && <PageIntro eyebrow="URL checker" title="Inspect a link before you open it." description="Check a URL or domain against structure, reputation, and redirect signals. An incomplete check is always shown as unverified — never safe." icon={<Globe2 size={22} />}><DomainChecker /></PageIntro>}
-          {page === 'history' && <ScanHistoryView history={history} onSelectScan={(scan) => { setCurrentAnalysis(scan); selectPage('scanner'); }} onClearHistory={clearHistory} onNewScan={() => { setCurrentAnalysis(null); selectPage('scanner'); }} />}
+          {page === 'scanner' && <ScannerPage currentAnalysis={currentAnalysis} onAnalysis={handleAnalysis} onScanAnother={() => setCurrentAnalysis(null)} onInspect={(url) => { setSelectedUrl(url); selectPage('links'); }} />}
+          {page === 'links' && <PageIntro eyebrow="URL checker" title="Inspect a link before you open it." description="Check a URL or domain against structure, reputation, and redirect signals. An incomplete check is always shown as unverified — never safe." icon={<Globe2 size={22} />}><DomainChecker initialUrl={selectedUrl} /></PageIntro>}
+          {page === 'history' && <div className="page-content-glass"><ScanHistoryView history={history} onSelectScan={(scan) => { setCurrentAnalysis(scan); selectPage('scanner'); }} onClearHistory={clearHistory} onNewScan={() => { setCurrentAnalysis(null); selectPage('scanner'); }} /></div>}
           {page === 'emergency' && <PageIntro eyebrow="Emergency guidance" title="Know what to do next." description="Choose the situation that best matches what happened. Small, calm steps can limit damage quickly." icon={<CircleHelp size={22} />}><EmergencyGuide /></PageIntro>}
           {page === 'admin' && <AdminOverview onNavigate={selectPage} />}
           {page === 'mail' && <MailActivity />}
@@ -180,10 +184,10 @@ function pageTitle(page: Page) {
 }
 
 function PageIntro({ eyebrow, title, description, icon, children }: { eyebrow: string; title: string; description: string; icon: React.ReactNode; children: React.ReactNode }) {
-  return <section className="page-section"><div className="page-heading"><div className="eyebrow"><span className="eyebrow-icon">{icon}</span>{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{children}</section>;
+  return <section className="page-section"><div className="page-heading"><div className="eyebrow"><span className="eyebrow-icon">{icon}</span>{eyebrow}</div><h1>{title}</h1><p>{description}</p></div><div className="page-content-glass">{children}</div></section>;
 }
 
-function ScannerPage({ currentAnalysis, onAnalysis, onScanAnother, onInspect }: { currentAnalysis: AnalysisResult | null; onAnalysis: (r: AnalysisResult) => void; onScanAnother: () => void; onInspect: () => void }) {
+function ScannerPage({ currentAnalysis, onAnalysis, onScanAnother, onInspect }: { currentAnalysis: AnalysisResult | null; onAnalysis: (r: AnalysisResult) => void; onScanAnother: () => void; onInspect: (url: string) => void }) {
   return <section className="page-section"><div className="scanner-hero"><div><div className="eyebrow"><span className="eyebrow-icon"><ShieldAlert size={18} /></span>Message scanner</div><h1>Make the suspicious<br /><em>feel explainable.</em></h1><p>Paste a message, upload a screenshot, and get a clear risk assessment before you respond or click.</p><div className="hero-trust"><span><CheckCircle2 size={15} /> Explainable signals</span><span><LockKeyhole size={15} /> Private by design</span><span><Activity size={15} /> Fast analysis</span></div></div><div className="hero-orbit"><div className="orbit-ring orbit-ring-one" /><div className="orbit-ring orbit-ring-two" /><div className="hero-shield"><ShieldCheck size={54} /></div><span className="orbit-chip chip-top"><AlertTriangle size={14} /> Red flags</span><span className="orbit-chip chip-bottom"><Link2 size={14} /> Link check</span></div></div>{currentAnalysis ? <AnalysisReport result={currentAnalysis} onScanAnother={onScanAnother} onInspectDomain={onInspect} /> : <MessageScanner onAnalysisComplete={onAnalysis} />}</section>;
 }
 

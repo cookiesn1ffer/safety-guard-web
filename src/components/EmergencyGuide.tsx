@@ -5,7 +5,7 @@ export const EmergencyGuide: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
       {/* Header Banner */}
-      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/40 rounded-2xl p-5 sm:p-6 space-y-3 backdrop-blur-sm shadow-xs transition-colors">
+      <div className="page-flat-surface bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/40 rounded-2xl p-5 sm:p-6 space-y-3 backdrop-blur-sm shadow-xs transition-colors">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
             <AlertOctagon className="w-6 h-6" />
@@ -22,7 +22,7 @@ export const EmergencyGuide: React.FC = () => {
       {/* 4 Phases Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Scenario 1: Entered Credentials / Password */}
-        <div className="bg-white/85 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 backdrop-blur-sm shadow-xs transition-colors">
+        <div className="page-flat-surface bg-white/85 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 backdrop-blur-sm shadow-xs transition-colors">
           <div className="flex items-center gap-2.5 text-rose-600 dark:text-rose-400 font-bold text-sm">
             <Key className="w-4 h-4" />
             <h3 className="text-slate-900 dark:text-white">1. If You Entered a Password or OTP</h3>
@@ -44,7 +44,7 @@ export const EmergencyGuide: React.FC = () => {
         </div>
 
         {/* Scenario 2: Financial Info / Credit Card */}
-        <div className="bg-white/85 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 backdrop-blur-sm shadow-xs transition-colors">
+        <div className="page-flat-surface bg-white/85 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 backdrop-blur-sm shadow-xs transition-colors">
           <div className="flex items-center gap-2.5 text-rose-600 dark:text-rose-400 font-bold text-sm">
             <CreditCard className="w-4 h-4" />
             <h3 className="text-slate-900 dark:text-white">2. If You Entered Banking or Card Info</h3>
@@ -66,7 +66,7 @@ export const EmergencyGuide: React.FC = () => {
         </div>
 
         {/* Scenario 3: Clicked a Link Only */}
-        <div className="bg-white/85 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 backdrop-blur-sm shadow-xs transition-colors">
+        <div className="page-flat-surface bg-white/85 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 backdrop-blur-sm shadow-xs transition-colors">
           <div className="flex items-center gap-2.5 text-amber-600 dark:text-amber-400 font-bold text-sm">
             <ShieldAlert className="w-4 h-4" />
             <h3 className="text-slate-900 dark:text-white">3. If You Only Clicked The Link</h3>
@@ -88,7 +88,7 @@ export const EmergencyGuide: React.FC = () => {
         </div>
 
         {/* Scenario 4: Official Reporting Channels */}
-        <div className="bg-white/85 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 backdrop-blur-sm shadow-xs transition-colors">
+        <div className="page-flat-surface bg-white/85 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 backdrop-blur-sm shadow-xs transition-colors">
           <div className="flex items-center gap-2.5 text-blue-600 dark:text-blue-400 font-bold text-sm">
             <PhoneCall className="w-4 h-4" />
             <h3 className="text-slate-900 dark:text-white">4. Where to Report Scams</h3>

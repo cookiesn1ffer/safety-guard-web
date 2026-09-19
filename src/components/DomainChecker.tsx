@@ -459,7 +459,7 @@ export const DomainChecker: React.FC<{ initialUrl?: string }> = ({ initialUrl = 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Intro info banner */}
-      <div className="bg-white/85 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 space-y-3 backdrop-blur-sm shadow-xs transition-colors">
+      <div className="page-flat-surface bg-white/85 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 space-y-3 backdrop-blur-sm shadow-xs transition-colors">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <Globe className="w-5 h-5" />
@@ -530,7 +530,7 @@ export const DomainChecker: React.FC<{ initialUrl?: string }> = ({ initialUrl = 
 
       {/* Result Card */}
       {result && activeVerdict && (
-        <div className="bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-md dark:shadow-xl animate-fadeIn backdrop-blur-sm transition-colors">
+        <div className="page-flat-surface page-result-surface bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-md dark:shadow-xl animate-fadeIn backdrop-blur-sm transition-colors">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">

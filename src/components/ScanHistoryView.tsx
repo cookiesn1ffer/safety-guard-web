@@ -64,7 +64,7 @@ export const ScanHistoryView: React.FC<ScanHistoryViewProps> = ({
             <div
               key={scan.id}
               onClick={() => onSelectScan(scan)}
-              className="p-4 rounded-xl bg-white/85 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group backdrop-blur-sm shadow-xs"
+              className="page-flat-surface p-4 rounded-xl bg-white/85 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group backdrop-blur-sm shadow-xs"
             >
               <div className="flex items-start gap-3.5 flex-1 min-w-0">
                 <div
