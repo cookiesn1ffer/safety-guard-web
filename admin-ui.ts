@@ -160,26 +160,27 @@ function actionBarsSvg(actions: Array<{ action: string; count: number }>, labelO
 /* -------------------------------------------------------------------- CSS */
 
 const SG_ADMIN_CSS = `<style>
+  html, body { margin: 0; min-height: 100%; background: #101416; }
   .sg-admin {
     color-scheme: dark;
-    --sg-bg: #04120f;
-    --sg-bg-2: #061a16;
-    --sg-panel: #0a201c;
-    --sg-panel-2: #0d2a24;
-    --sg-border: #17423a;
-    --sg-text: #e7fffb;
-    --sg-muted: #93b8b1;
-    --sg-accent: #2dd4bf;
-    --sg-safe: #34d399;
+    --sg-bg: #101416;
+    --sg-bg-2: #151b18;
+    --sg-panel: #1b251e;
+    --sg-panel-2: #202c23;
+    --sg-border: #3a4b3d;
+    --sg-text: #eef2ec;
+    --sg-muted: #a7b1a8;
+    --sg-accent: #d9f36b;
+    --sg-safe: #9fcd51;
     --sg-amber: #fbbf24;
     --sg-rose: #fb7185;
     --sg-slate: #64748b;
-    --sg-shadow: 0 18px 44px rgb(0 0 0 / 0.45);
+    --sg-shadow: 0 12px 30px rgb(8 13 9 / 0.18);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: radial-gradient(1200px 600px at 50% -12%, #0b2b26 0%, var(--sg-bg) 58%);
+    background: radial-gradient(1100px 520px at 50% -12%, #202a21 0%, var(--sg-bg) 58%);
     color: var(--sg-text);
     min-height: 100vh;
-    padding: 20px 16px 48px;
+    padding: 18px 20px 32px;
     line-height: 1.5;
   }
   .sg-admin[data-theme="light"] {
@@ -195,25 +196,38 @@ const SG_ADMIN_CSS = `<style>
     background: radial-gradient(1000px 500px at 50% -12%, #dff3ee 0%, var(--sg-bg) 60%);
   }
   .sg-admin * { box-sizing: border-box; }
-  .sg-wrap { max-width: 1120px; margin: 0 auto; }
+  .sg-wrap { max-width: 1180px; margin: 0 auto; }
+  .sg-console { display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 18px; align-items: start; }
+  .sg-sidebar { position: sticky; top: 18px; background: var(--sg-panel); border: 1px solid var(--sg-border); border-radius: 16px; padding: 12px; box-shadow: var(--sg-shadow); }
+  .sg-sidebar-brand { display: flex; align-items: center; gap: 9px; color: var(--sg-text); font-size: 13px; font-weight: 800; padding: 8px 9px 18px; }
+  .sg-sidebar-mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: var(--sg-accent); color: #182014; font-size: 15px; }
+  .sg-sidebar-label { color: var(--sg-muted); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 7px 9px; }
+  .sg-sidebar-nav { display: grid; gap: 3px; }
+  .sg-sidebar-nav a { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--sg-muted); font-size: 12.5px; font-weight: 600; border-radius: 9px; padding: 9px; }
+  .sg-sidebar-nav a:hover { background: var(--sg-panel-2); color: var(--sg-text); }
+  .sg-sidebar-nav a.is-active { background: color-mix(in srgb, var(--sg-accent) 13%, var(--sg-panel-2)); color: var(--sg-text); box-shadow: inset 3px 0 var(--sg-accent); }
+  .sg-sidebar-icon { width: 17px; text-align: center; color: var(--sg-accent); }
+  .sg-console-main { min-width: 0; }
   .sg-admin a { color: var(--sg-accent); }
   .sg-admin :focus-visible { outline: 2px solid var(--sg-accent); outline-offset: 2px; border-radius: 6px; }
 
-  .sg-header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .sg-header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .sg-header-stashed { display: none; }
   .sg-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .sg-title h1 { font-size: 20px; margin: 0; letter-spacing: -0.01em; }
   .sg-role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--sg-border); color: var(--sg-muted); background: var(--sg-panel-2); }
   .sg-role.is-admin { color: var(--sg-accent); border-color: rgb(45 212 191 / 0.5); }
   .sg-header-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
-  .sg-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--sg-border); padding-bottom: 8px; margin-bottom: 16px; }
+  .sg-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--sg-border); padding-bottom: 8px; margin-bottom: 12px; }
   .sg-tab { text-decoration: none; color: var(--sg-muted); font-weight: 600; font-size: 13.5px; padding: 7px 13px; border-radius: 999px; }
   .sg-tab:hover { color: var(--sg-text); background: var(--sg-panel-2); }
   .sg-tab.is-active { color: var(--sg-text); background: var(--sg-panel-2); border: 1px solid var(--sg-border); }
   .sg-count { display: inline-block; min-width: 18px; text-align: center; margin-left: 5px; padding: 0 5px; border-radius: 999px; background: var(--sg-rose); color: #20040a; font-size: 11px; font-weight: 800; }
 
-  .sg-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 6px 0 18px; }
-  .sg-card { background: var(--sg-panel); border: 1px solid var(--sg-border); border-radius: 14px; padding: 13px 15px; }
+  .sg-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0; margin: 6px 0 14px; border: 1px solid var(--sg-border); border-radius: 14px; background: var(--sg-panel); }
+  .sg-card { background: transparent; border: 0; border-right: 1px solid var(--sg-border); border-radius: 0; padding: 13px 15px; }
+  .sg-card:last-child { border-right: 0; }
   .sg-card .n { font-size: 25px; font-weight: 800; letter-spacing: -0.02em; }
   .sg-card .l { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--sg-muted); margin-top: 2px; }
   .sg-card.v-safe .n { color: var(--sg-safe); }
@@ -224,9 +238,9 @@ const SG_ADMIN_CSS = `<style>
   .sg-delta.down { color: var(--sg-safe); }
   .sg-delta.flat { color: var(--sg-muted); }
 
-  .sg-grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; align-items: start; }
+  .sg-grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px; align-items: start; }
   @media (max-width: 860px) { .sg-grid-2 { grid-template-columns: 1fr; } }
-  .sg-panel { background: var(--sg-panel); border: 1px solid var(--sg-border); border-radius: 16px; padding: 16px; box-shadow: var(--sg-shadow); }
+  .sg-panel { background: var(--sg-panel); border: 1px solid var(--sg-border); border-radius: 16px; padding: 15px; box-shadow: var(--sg-shadow); }
   .sg-panel h2 { font-size: 14px; margin: 0 0 12px; letter-spacing: 0.02em; }
   .sg-panel h2 .sg-sub { color: var(--sg-muted); font-weight: 500; letter-spacing: 0; }
 
@@ -340,6 +354,12 @@ const SG_ADMIN_CSS = `<style>
     .sg-admin { padding: 12px 10px 40px; }
     .sg-title h1 { font-size: 17px; }
     .sg-subject { max-width: 160px; }
+  }
+  @media (max-width: 780px) {
+    .sg-console { grid-template-columns: 1fr; gap: 12px; }
+    .sg-sidebar { position: static; padding: 8px; }
+    .sg-sidebar-brand { padding-bottom: 9px; }
+    .sg-sidebar-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>`;
 
@@ -684,7 +704,7 @@ export function renderAdminApp(opts: AdminAppOptions): string {
           : `<div class="sg-empty"><h3>No links yet</h3><p>Links appear here once a scanned message references them.</p></div>`
       }
     </div>
-    <div class="sg-panel">
+    <div class="sg-panel" id="mail-settings">
       <h2>Mail settings</h2>
       <form method="post" action="/admin/mail/settings" class="sg-settings">
         <label><input type="checkbox" name="store_subjects" ${storeSubjects ? "checked" : ""} /> Store subjects</label>
@@ -735,25 +755,37 @@ ${SG_ADMIN_CSS}
      data-filters-active="${Object.keys(activityFilters).some((k) => k !== "tab" && activityFilters[k]) ? "1" : "0"}"
      data-store-subjects="${storeSubjects ? "1" : "0"}">
   <div class="sg-wrap">
-    <header class="sg-header">
+    <header class="sg-header sg-header-stashed">
       <div class="sg-title">
-        <h1>Mail Activity</h1>
+        <h1>Safety Guard Admin</h1>
         <span class="sg-role${role === "admin" ? " is-admin" : ""}">${esc(role === "admin" ? (previewViewer ? "admin · viewer preview" : "admin") : "viewer")}</span>
       </div>
       <div class="sg-header-actions">
         ${rangeSwitch}
         ${viewerToggle}
-        <button type="button" class="sg-btn sg-ghost sg-sm" id="sg-theme" aria-pressed="false">Light theme</button>
+        <button type="button" class="sg-btn sg-ghost sg-sm" id="sg-theme-stashed" aria-pressed="false">Light theme</button>
       </div>
     </header>
 
-    <nav class="sg-tabs" aria-label="Sections">
-      <a class="sg-tab${tab === "overview" ? " is-active" : ""}" href="${tabHref("overview")}">Overview</a>
-      <a class="sg-tab${tab === "activity" ? " is-active" : ""}" href="${tabHref("activity")}">Mail activity${activityCount}</a>
-      ${isAdmin ? `<a class="sg-tab${tab === "links" ? " is-active" : ""}" href="${tabHref("links")}">Links</a>` : ""}
-    </nav>
-
-    ${body}
+    <div class="sg-console">
+      <aside class="sg-sidebar" aria-label="Admin navigation">
+        <div class="sg-sidebar-brand"><span class="sg-sidebar-mark">◉</span>Safety Guard</div>
+        <div class="sg-sidebar-label">Admin console</div>
+        <nav class="sg-sidebar-nav">
+          <a class="${tab === "overview" ? "is-active" : ""}" href="${tabHref("overview")}"><span class="sg-sidebar-icon">▦</span>Overview</a>
+          <a class="${tab === "activity" ? "is-active" : ""}" href="${tabHref("activity")}"><span class="sg-sidebar-icon">✉</span>Mail activity ${activityCount}</a>
+          ${isAdmin ? `<a href="/admin"><span class="sg-sidebar-icon">⊞</span>Allow &amp; block lists</a>
+          <a class="${tab === "links" ? "is-active" : ""}" href="${tabHref("links")}#mail-settings"><span class="sg-sidebar-icon">⚙</span>Settings</a>` : ""}
+        </nav>
+      </aside>
+      <main class="sg-console-main">
+        <header class="sg-header">
+          <div class="sg-title"><h1>Safety Guard Admin</h1><span class="sg-role${role === "admin" ? " is-admin" : ""}">${esc(role)}</span></div>
+          <div class="sg-header-actions">${rangeSwitch}${viewerToggle}<button type="button" class="sg-btn sg-ghost sg-sm" id="sg-theme" aria-pressed="false">Light theme</button></div>
+        </header>
+        ${body}
+      </main>
+    </div>
   </div>
 
   <div class="sg-panel-overlay" id="sg-panel" hidden>

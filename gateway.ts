@@ -1519,9 +1519,19 @@ function renderAdminPage(db: GatewayDb, now: Date): string {
   return pageShell(
     "Admin",
     `
-    <div class="admin card" style="max-width: 960px; width: 100%">
-      ${adminNav("links", db.unreadMailCount())}
-      <h1>Link gateway — review</h1>
+    <div class="admin-shell">
+      <aside class="admin-sidebar" aria-label="Admin navigation">
+        <div class="admin-sidebar-brand"><span>◉</span>Safety Guard</div>
+        <div class="admin-sidebar-label">Admin console</div>
+        <nav>
+          <a href="/admin/mail"><b>▦</b>Overview</a>
+          <a href="/admin/mail?tab=activity"><b>✉</b>Mail activity${db.unreadMailCount() ? `<i>${db.unreadMailCount()}</i>` : ""}</a>
+          <a class="active" href="/admin"><b>⊞</b>Allow &amp; block lists</a>
+          <a href="/admin/mail?tab=links#mail-settings"><b>⚙</b>Settings</a>
+        </nav>
+      </aside>
+      <main class="admin card">
+      <h1>Link gateway — Allow &amp; block lists</h1>
       <p>Authenticated as an administrator.</p>
 
       <h2>Recent links</h2>
@@ -1561,6 +1571,7 @@ function renderAdminPage(db: GatewayDb, now: Date): string {
         </table>
       </div>
       <p class="meta">Seen at ${escapeHtml(now.toISOString())}</p>
+      </main>
     </div>
     ${ADMIN_STYLE}`
   );
@@ -1629,6 +1640,58 @@ const ADMIN_STYLE = `<style>
   .toast button { cursor: pointer; }
   .toast .t-close { background: transparent; border: none; color: var(--muted); font-size: 16px; line-height: 1; padding: 0 4px; }
   @keyframes toastIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  /* Match the public Safety Guard shell: charcoal, lime accents, and compact surfaces. */
+  body:has(.admin) {
+    --bg: #101416;
+    --card: #1b251e;
+    --border: #3a4b3d;
+    --text: #eef2ec;
+    --muted: #a7b1a8;
+    --emerald: #9fcd51;
+    --sky: #d9f36b;
+    background: radial-gradient(1100px 520px at 50% -12%, #202a21 0%, var(--bg) 58%);
+    align-items: flex-start;
+    padding: 28px 20px;
+  }
+  .admin-shell { width: min(1180px, 100%); margin: 0 auto; display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 18px; align-items: start; }
+  .admin.card {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto;
+    padding: 22px !important;
+    border-radius: 18px;
+    border-color: var(--border);
+    box-shadow: 0 14px 34px rgb(8 13 9 / .2);
+  }
+  .admin-sidebar { position: sticky; top: 28px; padding: 12px; background: #1b251e; border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 14px 34px rgb(8 13 9 / .2); }
+  .admin-sidebar-brand { display: flex; align-items: center; gap: 9px; padding: 8px 9px 18px; font-size: 13px; font-weight: 800; }
+  .admin-sidebar-brand span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: #d9f36b; color: #172014; }
+  .admin-sidebar-label { padding: 7px 9px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .admin-sidebar nav { display: grid; gap: 3px; }
+  .admin-sidebar a { display: flex; align-items: center; gap: 8px; padding: 9px; border-radius: 9px; color: var(--muted); text-decoration: none; font-size: 12.5px; font-weight: 600; }
+  .admin-sidebar a b { width: 17px; color: #d9f36b; text-align: center; }
+  .admin-sidebar a:hover { background: #202c23; color: var(--text); }
+  .admin-sidebar a.active { color: var(--text); background: rgb(217 243 107 / .13); box-shadow: inset 3px 0 #d9f36b; }
+  .admin-sidebar i { margin-left: auto; min-width: 17px; text-align: center; padding: 1px 5px; border-radius: 99px; background: var(--rose); color: #fff; font-style: normal; font-size: 10px; }
+  .admin h1 { font: 800 30px/1.12 ui-sans-serif, system-ui, sans-serif; letter-spacing: -.035em; margin: 2px 0 6px; }
+  .admin h2 { margin: 20px 0 8px; }
+  .admin .admin-nav { margin-bottom: 14px; padding-bottom: 8px; }
+  .admin .admin-nav a.active { color: #172014; background: #d9f36b; border-color: #d9f36b; }
+  .admin .table-wrap { border-color: var(--border); border-radius: 12px; }
+  .admin th { background: #151d18; border-color: var(--border); }
+  .admin td { border-color: rgb(58 75 61 / .72); }
+  .admin .select, .admin .input { background: #151d18; border-color: var(--border); }
+  .admin .btn { background: #d9f36b; color: #172014; border-color: #d9f36b; }
+  .admin .btn-ghost-inline { background: transparent; color: var(--muted); border-color: var(--border); }
+  .admin .row-form { gap: 7px; margin: 8px 0; }
+  @media (max-width: 780px) {
+    body:has(.admin) { padding: 12px; }
+    .admin-shell { grid-template-columns: 1fr; gap: 12px; }
+    .admin-sidebar { position: static; }
+    .admin-sidebar nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .admin.card { padding: 16px !important; }
+  }
 </style>`;
 
 function adminNav(active: "links" | "mail", unread: number): string {
