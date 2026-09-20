@@ -210,8 +210,9 @@ A read-mode Outlook add-in that checks the links in the email you open and repor
 ### What it does
 - Reads subject, sender and HTML body; extracts up to 20 `http/https` links (skipping the site's own domain); hashes the `itemId` to a `ref` (SHA-256); calls `POST /api/inspect`; polls `GET /api/message/:ref/verdict` every 3s for ~30s.
 - Shows **Safe** (green), **Needs review** (amber) or **Blocked** (red), lists links **defanged** (`hxxps://example[.]com`) with a per-link verdict, and offers **Open safety check page** (the gateway URL).
+- In parallel, sends the plain-text body to `POST /api/analyze-message` and shows a separate **Message content risk** panel: a Low/Medium/High badge, a 0–100 risk score, the scam type (e.g. "Account Takeover Phishing"), a one-line summary, and the top red flags — independent of the link check, so a scam with no links still gets flagged. The body is sent only for this one analysis call; it is never stored or logged server-side.
 - Adds a **warning bar** to the message for Needs review/Blocked, and reports the event to `POST /api/events` (provider `outlook`, action `none`).
-- **Fail-open:** if the server is asleep or a call fails it shows "Check failed — treat links with care" with a **Retry** button. It never sends or logs the email body — only links.
+- **Fail-open:** if the server is asleep or a call fails it shows "Check failed — treat links with care" with a **Retry** button.
 
 ### Served files
 `/outlook/*` is served with **add-in-only headers** (`Content-Security-Policy` with `frame-ancestors` for the Office hosts, and **no `X-Frame-Options`**) and is mounted **before** the SPA catch-all. No other route on the site gets those headers.
@@ -221,7 +222,7 @@ The current model is a shared secret typed into the pane. Real per-user auth wou
 
 ## Gmail add-on
 
-A Gmail add-on (Google Apps Script, `gmail/`) that checks the links in the email you open and reports the result to `/admin/mail` — the Gmail counterpart to the Outlook add-in above. See **[`gmail/README.md`](gmail/README.md)** for full setup.
+A Gmail add-on (Google Apps Script, `gmail/`) that checks the links in the email you open and reports the result to `/admin/mail` — the Gmail counterpart to the Outlook add-in above. Like the Outlook add-in, it also shows a separate **Message content risk** section (risk score, scam type, red flags) from `POST /api/analyze-message`. See **[`gmail/README.md`](gmail/README.md)** for full setup.
 
 Key difference from Outlook: this runs on Google's servers, not in the browser, so it needs a **publicly reachable HTTPS `GATEWAY_URL`** (e.g. your Render deployment) — it cannot call `http://localhost`. Set **`GMAIL_ADDIN_KEY`** on the server (a limited key, same model as `OUTLOOK_ADDIN_KEY`, scoped to `POST /api/inspect`, `GET /api/message/:ref/verdict` and `POST /api/events`, forcing `provider="gmail"`). Unset/empty ⇒ add-on access disabled.
 

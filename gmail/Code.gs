@@ -151,6 +151,24 @@ var VERDICT_META = {
   ERROR: { label: 'Check failed', color: '#b06000', text: 'Check failed — treat links with care.' },
 };
 
+var RISK_META = {
+  SAFE: { label: 'Low risk', color: '#1e8e3e' },
+  SUSPICIOUS: { label: 'Medium risk', color: '#b06000' },
+  DANGEROUS_SCAM: { label: 'High risk', color: '#c5221f' },
+};
+
+/** Message-content analysis (separate from the link check). Never blocks the card on failure. */
+function analyzeMessage_(text, senderDisplay) {
+  try {
+    return apiFetch_('/api/analyze-message', {
+      method: 'post',
+      payload: JSON.stringify({ message: text || '', sender: senderDisplay || '', platform: 'Gmail' }),
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
 function keyEntryCard_(status) {
   var section = CardService.newCardSection()
     .addWidget(CardService.newTextInput()
@@ -179,7 +197,7 @@ function errorCard_(message) {
     .build();
 }
 
-function resultCard_(verdict, reason, links, gatewayUrl, ref) {
+function resultCard_(verdict, reason, links, gatewayUrl, msgResult) {
   var meta = VERDICT_META[verdict] || VERDICT_META.ERROR;
   var section = CardService.newCardSection()
     .addWidget(CardService.newTextParagraph()
@@ -207,10 +225,31 @@ function resultCard_(verdict, reason, links, gatewayUrl, ref) {
     .setOnClickAction(CardService.newAction().setFunctionName('reCheckAction')));
   section.addWidget(buttons);
 
-  return CardService.newCardBuilder()
+  var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader().setTitle('Online Safety Guard'))
-    .addSection(section)
-    .build();
+    .addSection(section);
+
+  if (msgResult) {
+    var rMeta = RISK_META[msgResult.safetyStatus] || RISK_META.SUSPICIOUS;
+    var riskSection = CardService.newCardSection().setHeader('Message content risk');
+    riskSection.addWidget(CardService.newTextParagraph().setText(
+      '<font color="' + rMeta.color + '"><b>' + rMeta.label + '</b></font> — ' +
+      'Risk score ' + (typeof msgResult.riskScore === 'number' ? msgResult.riskScore : '?') + '/100'));
+    if (msgResult.scamType) {
+      riskSection.addWidget(CardService.newTextParagraph().setText('<b>' + msgResult.scamType + '</b>'));
+    }
+    if (msgResult.verdictSummary) {
+      riskSection.addWidget(CardService.newTextParagraph().setText(msgResult.verdictSummary));
+    }
+    var flags = Array.isArray(msgResult.redFlags) ? msgResult.redFlags.slice(0, 6) : [];
+    flags.forEach(function (f) {
+      riskSection.addWidget(CardService.newTextParagraph()
+        .setText('• <b>' + (f.flag || '') + ':</b> ' + (f.evidence || '')));
+    });
+    card.addSection(riskSection);
+  }
+
+  return card.build();
 }
 
 /* -------------------------------------------------------------- main flow */
@@ -238,6 +277,8 @@ function runAnalysis_(e) {
     try { mailbox = Session.getActiveUser().getEmail() || ''; } catch (err) { mailbox = ''; }
 
     var urls = extractLinks_(html);
+    var plainText = message.getPlainBody() || '';
+    var msgResult = analyzeMessage_(plainText, senderDisplay);
 
     if (!urls.length) {
       postEvent_({
@@ -245,7 +286,7 @@ function runAnalysis_(e) {
         sender_domain: domainOf_(senderEmail), sender_display: senderDisplay,
         subject: subject, verdict: 'SAFE', action: 'none', link_count: 0,
       });
-      return resultCard_('SAFE', 'No links found in this email.', [], null, ref);
+      return resultCard_('SAFE', 'No links found in this email.', [], null, msgResult);
     }
 
     var created = apiFetch_('/api/inspect', {
@@ -266,7 +307,7 @@ function runAnalysis_(e) {
       subject: subject, verdict: verdict, action: 'none', link_count: links.length,
     });
 
-    return resultCard_(verdict, (result && (result.reason || result.verdictReason)) || '', links, gatewayUrl, ref);
+    return resultCard_(verdict, (result && (result.reason || result.verdictReason)) || '', links, gatewayUrl, msgResult);
   } catch (err) {
     return errorCard_(err && err.message ? err.message : 'The safety server could not be reached.');
   }

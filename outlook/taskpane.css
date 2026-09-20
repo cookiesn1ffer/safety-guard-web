@@ -126,6 +126,19 @@ body {
 .sgp-pill.sgp-rose { color: var(--sgp-rose); }
 .sgp-pill.sgp-neutral { color: var(--sgp-muted); }
 
+.sgp-flags { list-style: none; margin: 8px 0 0; padding: 0; }
+.sgp-flags li {
+  padding: 6px 0 6px 16px;
+  border-bottom: 1px solid var(--sgp-border);
+  font-size: 12.5px;
+  position: relative;
+}
+.sgp-flags li::before { content: "\2022"; position: absolute; left: 0; color: var(--sgp-muted); }
+.sgp-flags li:last-child { border-bottom: none; }
+.sgp-flags li b { font-weight: 700; }
+.sgp-flags .sgp-flag-high::before { color: var(--sgp-rose); }
+.sgp-flags .sgp-flag-medium::before { color: var(--sgp-amber); }
+
 .sgp-foot { margin-top: 8px; text-align: center; }
 
 .sgp :focus-visible { outline: 2px solid var(--sgp-accent); outline-offset: 2px; border-radius: 6px; }

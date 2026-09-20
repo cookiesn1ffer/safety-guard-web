@@ -42,8 +42,13 @@ reach `http://localhost:3000`.
 - Shows **Safe** (green), **Needs review** (amber) or **Blocked** (red) in a card, lists links **defanged**
   (`hxxps://example[.]com`) with a per-link verdict, and offers **Open safety check page** (the gateway URL)
   and **Re-check**.
-- Reports the event to `POST /api/events` (provider `gmail`, action `none`). Never sends or logs the email
-  body — only links.
+- Also sends the plain-text body (`message.getPlainBody()`) to `POST /api/analyze-message` and adds a
+  **Message content risk** section to the same card: a Low/Medium/High badge, a 0–100 risk score, the scam
+  type, a one-line summary, and the top red flags — independent of the link check, so a scam with no links
+  (e.g. "call this number") is still flagged.
+- Reports the event to `POST /api/events` (provider `gmail`, action `none`). The email body is only sent for
+  the one stateless `/api/analyze-message` call and is never stored or logged server-side; `/api/events`
+  itself never carries a body field.
 - If the poll doesn't resolve in time, or a call fails, the card shows a retry action rather than blocking.
 
 ## Differences from the Outlook add-in

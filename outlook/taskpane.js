@@ -250,6 +250,55 @@
     });
   }
 
+  function readBodyText(item) {
+    return new Promise(function (resolve) {
+      try {
+        item.body.getAsync(Office.CoercionType.Text, function (result) {
+          resolve(result && result.status === Office.AsyncResultStatus.Succeeded ? result.value : "");
+        });
+      } catch (e) {
+        resolve("");
+      }
+    });
+  }
+
+  var RISK_META = {
+    SAFE: { cls: "sgp-safe", label: "Low risk" },
+    SUSPICIOUS: { cls: "sgp-amber", label: "Medium risk" },
+    DANGEROUS_SCAM: { cls: "sgp-rose", label: "High risk" }
+  };
+
+  function analyzeMessage(text, senderDisplay) {
+    return apiFetch("/api/analyze-message", {
+      method: "POST",
+      body: JSON.stringify({ message: text || "", sender: senderDisplay || "", platform: "Outlook / Email" })
+    }).catch(function () { return null; });
+  }
+
+  function renderMessageRisk(result) {
+    if (!result) { show(els.msgRiskPanel, false); return; }
+    var meta = RISK_META[result.safetyStatus] || RISK_META.SUSPICIOUS;
+    els.msgRiskBadge.className = "sgp-badge " + meta.cls;
+    setText(els.msgRiskBadge, meta.label);
+    setText(els.msgRiskScore, "Risk score: " + (typeof result.riskScore === "number" ? result.riskScore : "?") + "/100");
+    setText(els.msgScamType, result.scamType || "");
+    setText(els.msgSummary, result.verdictSummary || "");
+
+    var list = els.msgFlags;
+    while (list.firstChild) list.removeChild(list.firstChild);
+    var flags = Array.isArray(result.redFlags) ? result.redFlags.slice(0, 6) : [];
+    flags.forEach(function (f) {
+      var li = document.createElement("li");
+      li.className = f.severity === "high" ? "sgp-flag-high" : f.severity === "medium" ? "sgp-flag-medium" : "";
+      var b = document.createElement("b");
+      b.textContent = (f.flag || "") + ": ";
+      li.appendChild(b);
+      li.appendChild(document.createTextNode(f.evidence || ""));
+      list.appendChild(li);
+    });
+    show(els.msgRiskPanel, true);
+  }
+
   function pollVerdict() {
     var attempts = 0;
     return new Promise(function (resolve, reject) {
@@ -297,34 +346,38 @@
     renderVerdict("PENDING", "Checking the links in this email\u2026", [], "");
     setText(els.subStatus, "Checking\u2026");
 
-    readBodyHtml(item)
-      .then(function (html) {
+    show(els.msgRiskPanel, false);
+
+    Promise.all([readBodyHtml(item), readBodyText(item)])
+      .then(function (parts) {
+        var html = parts[0];
+        var text = parts[1];
         var urls = extractLinks(html);
-        if (!urls.length) {
-          renderVerdict("SAFE", "No links found in this email.", [], "");
-          setText(els.subStatus, "Done");
-          postEvent("SAFE", domainOf(senderEmail), senderDisplay, subject, 0);
-          notifyBar(item, "SAFE");
-          state.running = false;
-          return null;
-        }
-        return apiFetch("/api/inspect", {
-          method: "POST",
-          body: JSON.stringify({ message_ref: state.ref, urls: urls })
-        }).then(function (created) {
-          if (created && created.links && created.links.length) {
-            state.gatewayUrl = created.links[0].gateway_url || null;
-          }
-          return pollVerdict();
-        });
+        var msgPromise = analyzeMessage(text, senderDisplay);
+
+        var linkPromise = !urls.length
+          ? Promise.resolve({ verdict: "SAFE", links: [], reason: "No links found in this email." })
+          : apiFetch("/api/inspect", {
+              method: "POST",
+              body: JSON.stringify({ message_ref: state.ref, urls: urls })
+            }).then(function (created) {
+              if (created && created.links && created.links.length) {
+                state.gatewayUrl = created.links[0].gateway_url || null;
+              }
+              return pollVerdict();
+            });
+
+        return Promise.all([linkPromise, msgPromise]);
       })
-      .then(function (result) {
-        if (!result) return; // no-links path already finished
+      .then(function (results) {
+        var result = results[0];
+        var msgResult = results[1];
         var verdict = mapVerdict(result.verdict);
         var links = (result.links || []).map(function (l) {
           return { url: l.url, status: mapVerdict(l.status) };
         });
-        renderVerdict(verdict, result.reason || result.verdictReason || "", links, result.inspected_at ? "" : "");
+        renderVerdict(verdict, result.reason || result.verdictReason || "", links, "");
+        renderMessageRisk(msgResult);
         setText(els.subStatus, "Done");
         notifyBar(item, verdict);
         postEvent(verdict, domainOf(senderEmail), senderDisplay, subject, links.length);
@@ -351,6 +404,7 @@
 
   function showFail(detail) {
     show(els.resultPanel, false);
+    show(els.msgRiskPanel, false);
     show(els.failPanel, true);
     setText(els.failDetail, detail || "Could not reach the safety server.");
     setText(els.subStatus, "Check failed");
@@ -408,7 +462,13 @@
       failPanel: $("failPanel"),
       failDetail: $("failDetail"),
       metaText: $("metaText"),
-      subStatus: $("subStatus")
+      subStatus: $("subStatus"),
+      msgRiskPanel: $("msgRiskPanel"),
+      msgRiskBadge: $("msgRiskBadge"),
+      msgRiskScore: $("msgRiskScore"),
+      msgScamType: $("msgScamType"),
+      msgSummary: $("msgSummary"),
+      msgFlags: $("msgFlags")
     };
 
     if (els.saveKey) {
