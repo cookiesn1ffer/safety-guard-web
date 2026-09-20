@@ -22,6 +22,10 @@ services:
       # INSPECTOR_KEY so the add-in cannot access admin-only operations.
       - key: OUTLOOK_ADDIN_KEY
         sync: false
+      # Limited key entered in the Gmail add-on's settings card. Keep it
+      # different from INSPECTOR_KEY and OUTLOOK_ADDIN_KEY.
+      - key: GMAIL_ADDIN_KEY
+        sync: false
       # Password for the /admin review page (you'll be prompted for it).
       - key: ADMIN_PASSWORD
         sync: false

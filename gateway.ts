@@ -319,17 +319,27 @@ function outlookAddinKey(): string | null {
   return key && key.length > 0 ? key : null;
 }
 
+/** The optional, limited Gmail add-on key. Unset/empty ⇒ add-on access disabled. */
+function gmailAddinKey(): string | null {
+  const key = process.env.GMAIL_ADDIN_KEY;
+  return key && key.length > 0 ? key : null;
+}
+
 /**
- * Accepts either the full INSPECTOR_KEY or the limited OUTLOOK_ADDIN_KEY as a
- * Bearer token, both compared in constant time. `res.locals.addinAuth` is true
- * when the add-in key matched, so /api/events can force provider "outlook".
- * When OUTLOOK_ADDIN_KEY is unset the behaviour is exactly INSPECTOR_KEY-only.
+ * Accepts the full INSPECTOR_KEY or either limited add-in key
+ * (OUTLOOK_ADDIN_KEY / GMAIL_ADDIN_KEY) as a Bearer token, all compared in
+ * constant time. `res.locals.addinProvider` is set to "outlook" or "gmail"
+ * when the matching add-in key was used, so /api/events can force that
+ * provider regardless of what the request body claims. Unset ⇒ that add-in
+ * has no ingest access; if neither add-in key nor INSPECTOR_KEY is set, the
+ * route is disabled entirely.
  */
 function requireIngestKey(req: Request, res: Response, next: NextFunction): void {
   const inspector = process.env.INSPECTOR_KEY;
-  const addin = outlookAddinKey();
-  if (!inspector && !addin) {
-    console.error("[gateway] neither INSPECTOR_KEY nor OUTLOOK_ADDIN_KEY is set — refusing to serve /api/inspect");
+  const outlookKey = outlookAddinKey();
+  const gmailKey = gmailAddinKey();
+  if (!inspector && !outlookKey && !gmailKey) {
+    console.error("[gateway] none of INSPECTOR_KEY, OUTLOOK_ADDIN_KEY, GMAIL_ADDIN_KEY is set — refusing to serve /api/inspect");
     res.status(503).json({ error: "inspector not configured on the server" });
     return;
   }
@@ -341,12 +351,17 @@ function requireIngestKey(req: Request, res: Response, next: NextFunction): void
   }
   const token = match[1];
   if (inspector && safeEqual(token, inspector)) {
-    res.locals.addinAuth = false;
+    res.locals.addinProvider = undefined;
     next();
     return;
   }
-  if (addin && safeEqual(token, addin)) {
-    res.locals.addinAuth = true;
+  if (outlookKey && safeEqual(token, outlookKey)) {
+    res.locals.addinProvider = "outlook";
+    next();
+    return;
+  }
+  if (gmailKey && safeEqual(token, gmailKey)) {
+    res.locals.addinProvider = "gmail";
     next();
     return;
   }
@@ -988,8 +1003,8 @@ export function createGatewayRouter(options: GatewayOptions): Router {
     if (!salt) log("EVENT_SALT is not set — mail account hashes are unsalted");
     const nowIso = nowFn().toISOString();
     const v = parsed.value;
-    // The limited Outlook add-in key may only ever report Outlook events.
-    const provider = res.locals.addinAuth ? "outlook" : v.provider;
+    // A limited add-in/add-on key may only ever report its own provider.
+    const provider = res.locals.addinProvider ?? v.provider;
     const id = db.upsertMailEvent({
       provider,
       accountHash: hashMailbox(v.mailbox, salt),

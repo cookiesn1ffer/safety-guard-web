@@ -219,6 +219,12 @@ A read-mode Outlook add-in that checks the links in the email you open and repor
 ### Switching to Microsoft sign-in (before sharing widely)
 The current model is a shared secret typed into the pane. Real per-user auth would use `Office.auth.getAccessToken()` (requires SSO — an Entra app registration plus `WebApplicationInfo` in the manifest), send that token instead of the key, and validate it server-side (verify the signature against the tenant's JWKS, check `aud`/`iss`/`scp`, map the user). That removes the shared secret from the pane and gives per-user revocation — the right step before distributing beyond yourself.
 
+## Gmail add-on
+
+A Gmail add-on (Google Apps Script, `gmail/`) that checks the links in the email you open and reports the result to `/admin/mail` — the Gmail counterpart to the Outlook add-in above. See **[`gmail/README.md`](gmail/README.md)** for full setup.
+
+Key difference from Outlook: this runs on Google's servers, not in the browser, so it needs a **publicly reachable HTTPS `GATEWAY_URL`** (e.g. your Render deployment) — it cannot call `http://localhost`. Set **`GMAIL_ADDIN_KEY`** on the server (a limited key, same model as `OUTLOOK_ADDIN_KEY`, scoped to `POST /api/inspect`, `GET /api/message/:ref/verdict` and `POST /api/events`, forcing `provider="gmail"`). Unset/empty ⇒ add-on access disabled.
+
 ## Deploy (persistent host)
 
 The gateway keeps its SQLite database on disk, so it must run on a host with a **persistent filesystem** (a VM, a Docker host, or a managed container platform with a mounted volume) — **not** a serverless function.
@@ -285,6 +291,7 @@ The image runs the server as the non-root `node` user, sets `DB_PATH=/data/gatew
 | --- | --- | --- |
 | `INSPECTOR_KEY` | **Yes** | Bearer token the sender/email script uses for `POST /api/inspect`. The endpoint returns `503` when unset (fail-closed). |
 | `OUTLOOK_ADDIN_KEY` | For the Outlook add-in | Optional **limited** Bearer key accepted only on `POST /api/inspect`, `GET /api/message/:ref/verdict` and `POST /api/events` (where it forces `provider="outlook"`). Unset/empty ⇒ add-in access disabled. Never grants admin access. Keep it different from `INSPECTOR_KEY`. |
+| `GMAIL_ADDIN_KEY` | For the Gmail add-on | Same scope as `OUTLOOK_ADDIN_KEY`, but forces `provider="gmail"`. Unset/empty ⇒ add-on access disabled. Keep it different from `INSPECTOR_KEY` and `OUTLOOK_ADDIN_KEY`. |
 | `ADMIN_PASSWORD` | **Yes** | Password for the `/admin` review page (HTTP Basic, any username). `/admin` returns `503` when unset. |
 | `VIEWER_PASSWORD` | No | Optional **read-only** admin login. If set (and different from `ADMIN_PASSWORD`) it can open the new `/admin/mail` UI and read `/api/events` + `/api/events/stats` only; every POST/DELETE, Links, blocklist, allowlist, settings and `?legacy=1` return `403`. Unset/empty/equal-to-admin ⇒ disabled. |
 | `GATEWAY_URL` | **Yes in production** | Public HTTPS base URL used to build the `/go/:id` links returned by the API. Falls back to the request's own origin, so set it explicitly behind a proxy. |
