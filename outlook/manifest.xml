@@ -109,9 +109,6 @@
                   </Icon>
 
                   <Action xsi:type="ShowTaskpane">
-                    <!-- Pinning is what makes Office fire ItemChanged when the
-                         user switches emails, so the pane can re-scan. -->
-                    <SupportsPinning>true</SupportsPinning>
                     <SourceLocation resid="Taskpane.Url"/>
                   </Action>
 
