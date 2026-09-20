@@ -199,7 +199,7 @@ A read-mode Outlook add-in that checks the links in the email you open and repor
 ### Setup
 
 1. Set **`OUTLOOK_ADDIN_KEY`** on the server to a long random value (different from `INSPECTOR_KEY`) and redeploy. Leave it unset to disable add-in access entirely.
-2. The manifest lives at **`outlook/manifest.xml`** — kept in the repo, **not served**. Every URL in it is under `https://safety-guard-web.onrender.com/outlook/`.
+2. The manifest lives at **`outlook/manifest.xml`** — kept in the repo, **not served**. Every URL in it is under `https://safety-guard-web-ncra.onrender.com/outlook/`.
 3. **Sideload** the manifest:
    - **Outlook on the web / new Outlook:** Settings → General → Manage add-ins → My add-ins → **Custom add-ins → Add from file** → pick `outlook/manifest.xml`.
    - **Outlook desktop (Windows):** File → Manage Add-ins → My add-ins → **Custom add-ins → Add from file**.

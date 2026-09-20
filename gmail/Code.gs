@@ -12,7 +12,7 @@
  */
 
 // EDIT THIS after you deploy the server (e.g. to Render).
-var BASE_URL = 'https://safety-guard-web.onrender.com';
+var BASE_URL = 'https://safety-guard-web-ncra.onrender.com';
 
 var KEY_PROPERTY = 'SG_ADDIN_KEY';
 var POLL_INTERVAL_MS = 2000;
