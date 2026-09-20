@@ -8,7 +8,6 @@ import {
   CircleHelp,
   Clock3,
   ExternalLink,
-  FileWarning,
   Globe2,
   History,
   LayoutDashboard,
@@ -22,7 +21,6 @@ import {
   PanelLeftOpen,
   Plus,
   Search,
-  Settings2,
   Shield,
   ShieldAlert,
   ShieldCheck,
@@ -38,7 +36,7 @@ import { AnalysisResult } from './types';
 import { clearScanHistory, getScanHistory, saveScanToHistory } from './utils/storage';
 
 type PublicPage = 'scanner' | 'links' | 'history' | 'emergency';
-type AdminPage = 'admin' | 'mail' | 'lists' | 'settings';
+type AdminPage = 'admin' | 'mail';
 type Page = PublicPage | AdminPage | 'gateway';
 type GatewayState = 'checking' | 'caution' | 'blocked' | 'safe';
 
@@ -52,13 +50,7 @@ const navPublic = [
 const navAdmin = [
   { id: 'admin' as const, label: 'Overview', icon: LayoutDashboard },
   { id: 'mail' as const, label: 'Mail activity', icon: Mail },
-  { id: 'lists' as const, label: 'Allow & block lists', icon: ListIcon },
-  { id: 'settings' as const, label: 'Settings', icon: Settings2 },
 ];
-
-function ListIcon(props: React.ComponentProps<typeof Settings2>) {
-  return <FileWarning {...props} />;
-}
 
 const statCards = [
   { label: 'Inspected links', value: '1,284', trend: '+12.8%', icon: Link2, tone: 'blue' },
@@ -119,7 +111,7 @@ function App() {
     setHistory([]);
   };
 
-  const isAdmin = ['admin', 'mail', 'lists', 'settings'].includes(page);
+  const isAdmin = ['admin', 'mail'].includes(page);
 
   return (
     <div className="app-frame">
@@ -167,8 +159,6 @@ function App() {
           {page === 'emergency' && <PageIntro eyebrow="Emergency guidance" title="Know what to do next." description="Choose the situation that best matches what happened. Small, calm steps can limit damage quickly." icon={<CircleHelp size={22} />}><EmergencyGuide /></PageIntro>}
           {page === 'admin' && <AdminOverview onNavigate={selectPage} />}
           {page === 'mail' && <MailActivity />}
-          {page === 'lists' && <ListsPage />}
-          {page === 'settings' && <SettingsPage />}
           {page === 'gateway' && <GatewayPage state={gatewayState} checked={gatewayChecked} onCheck={() => { setGatewayChecked(true); setGatewayState('checking'); setTimeout(() => setGatewayState('caution'), 900); }} onStateChange={setGatewayState} />}
         </main>
 
@@ -196,18 +186,13 @@ function ScannerPage({ currentAnalysis, onAnalysis, onScanAnother, onInspect }: 
 }
 
 function AdminOverview({ onNavigate }: { onNavigate: (p: Page) => void }) {
-  return <AdminPageIntro eyebrow="Admin console" title="A quieter view of your protection layer." description="Review inspected links, mail security events, and policy decisions from one place." icon={<LayoutDashboard size={22} />}><div className="stat-grid">{statCards.map(({ label, value, trend, icon: Icon, tone }) => <div className={`stat-card stat-${tone}`} key={label}><div className="stat-icon"><Icon size={18} /></div><span>{label}</span><strong>{value}</strong><small>{trend}</small></div>)}</div><div className="admin-grid"><section className="panel"><div className="panel-header"><div><span className="panel-kicker">Recent inspections</span><h2>Link activity</h2></div><button className="text-button" onClick={() => onNavigate('lists')}>Manage lists <ArrowRight size={14} /></button></div><div className="activity-list"><ActivityRow domain="secure-account-check.com/login" source="Outlook · order-4821" status="blocked" time="4 min ago" /><ActivityRow domain="notion.so/workspace/invite" source="Gmail · team-update" status="safe" time="18 min ago" /><ActivityRow domain="paypaI-verification.net" source="Outlook · billing-alert" status="caution" time="42 min ago" /><ActivityRow domain="docs.google.com/forms/d/e/…" source="Mail activity · hiring" status="safe" time="1 hr ago" /></div></section><section className="panel review-panel"><div className="panel-header"><div><span className="panel-kicker">Needs attention</span><h2>Review queue</h2></div><span className="queue-badge">14 open</span></div><div className="review-item"><div className="review-symbol review-symbol-amber"><AlertTriangle size={17} /></div><div><strong>Unverified destination</strong><p>cdn-customer-support.co</p><small>Reported from Mail Activity</small></div><MoreHorizontal size={18} /></div><div className="review-item"><div className="review-symbol review-symbol-red"><ShieldAlert size={17} /></div><div><strong>New blocked domain</strong><p>microsoft-security-alerts.top</p><small>3 messages · 12 recipients</small></div><MoreHorizontal size={18} /></div><button className="wide-button" onClick={() => onNavigate('mail')}>Open mail activity <ArrowRight size={15} /></button></section></div></AdminPageIntro>;
+  return <AdminPageIntro eyebrow="Admin console" title="A quieter view of your protection layer." description="Review inspected links, mail security events, and policy decisions from one place." icon={<LayoutDashboard size={22} />}><div className="stat-grid">{statCards.map(({ label, value, trend, icon: Icon, tone }) => <div className={`stat-card stat-${tone}`} key={label}><div className="stat-icon"><Icon size={18} /></div><span>{label}</span><strong>{value}</strong><small>{trend}</small></div>)}</div><div className="admin-grid"><section className="panel"><div className="panel-header"><div><span className="panel-kicker">Recent inspections</span><h2>Link activity</h2></div><a className="text-button" href="/admin">Manage lists <ArrowRight size={14} /></a></div><div className="activity-list"><ActivityRow domain="secure-account-check.com/login" source="Outlook · order-4821" status="blocked" time="4 min ago" /><ActivityRow domain="notion.so/workspace/invite" source="Gmail · team-update" status="safe" time="18 min ago" /><ActivityRow domain="paypaI-verification.net" source="Outlook · billing-alert" status="caution" time="42 min ago" /><ActivityRow domain="docs.google.com/forms/d/e/…" source="Mail activity · hiring" status="safe" time="1 hr ago" /></div></section><section className="panel review-panel"><div className="panel-header"><div><span className="panel-kicker">Needs attention</span><h2>Review queue</h2></div><span className="queue-badge">14 open</span></div><div className="review-item"><div className="review-symbol review-symbol-amber"><AlertTriangle size={17} /></div><div><strong>Unverified destination</strong><p>cdn-customer-support.co</p><small>Reported from Mail Activity</small></div><MoreHorizontal size={18} /></div><div className="review-item"><div className="review-symbol review-symbol-red"><ShieldAlert size={17} /></div><div><strong>New blocked domain</strong><p>microsoft-security-alerts.top</p><small>3 messages · 12 recipients</small></div><MoreHorizontal size={18} /></div><button className="wide-button" onClick={() => onNavigate('mail')}>Open mail activity <ArrowRight size={15} /></button></section></div></AdminPageIntro>;
 }
 
 function ActivityRow({ domain, source, status, time }: { domain: string; source: string; status: 'blocked' | 'caution' | 'safe'; time: string }) { return <div className="activity-row"><div className="activity-domain"><div className="domain-favicon"><Globe2 size={15} /></div><div><strong>{domain}</strong><span>{source}</span></div></div><StatusPill status={status} /><time>{time}</time></div>; }
 
 function MailActivity() { return <AdminPageIntro eyebrow="Admin console / Mail activity" title="Reported email security events." description="These events represent reports from an existing mail integration. No inbox access is created here." icon={<Mail size={22} />}><div className="mail-toolbar"><div className="search-field"><Search size={16} /><input placeholder="Search sender, subject, or event ID" /></div><select defaultValue="all"><option value="all">All statuses</option><option>Blocked</option><option>Needs review</option><option>Safe</option></select><button className="secondary-button">Last 30 days <ChevronRight size={14} /></button></div><div className="panel table-panel"><table><thead><tr><th>Event</th><th>Source</th><th>Related links</th><th>Status</th><th>Received</th></tr></thead><tbody><tr><td><strong>Suspicious invoice follow-up</strong><span>evt_01HZX82A · 3 links found</span></td><td>Outlook</td><td><button className="link-button">2 inspected links</button></td><td><StatusPill status="blocked" /></td><td>Today, 09:42</td></tr><tr><td><strong>Workspace invitation</strong><span>evt_01HZX761 · 1 link found</span></td><td>Gmail</td><td><button className="link-button">1 inspected link</button></td><td><StatusPill status="safe" /></td><td>Today, 08:18</td></tr><tr><td><strong>Account verification notice</strong><span>evt_01HZWQ90 · 1 link found</span></td><td>Outlook</td><td><button className="link-button">1 inspected link</button></td><td><StatusPill status="caution" /></td><td>Yesterday, 17:06</td></tr></tbody></table></div></AdminPageIntro>; }
 
-function ListsPage() { return <AdminPageIntro eyebrow="Admin console / Lists" title="Decide which destinations get a second look." description="Allowlist trusted domains and block known harmful destinations. Changes update the protected gateway." icon={<FileWarning size={22} />}><div className="list-grid"><ListPanel title="Allowlisted" count="18 domains" tone="safe" items={['notion.so', 'docs.google.com', 'github.com', 'stripe.com']} /><ListPanel title="Blocked" count="42 domains" tone="danger" items={['paypaI-verification.net', 'microsoft-security-alerts.top', 'secure-account-check.com', 'gift-card-claim.xyz']} /></div></AdminPageIntro>; }
-function ListPanel({ title, count, tone, items }: { title: string; count: string; tone: 'safe' | 'danger'; items: string[] }) { return <section className="panel list-panel"><div className="panel-header"><div><span className={`list-dot list-dot-${tone}`} /><h2>{title}</h2><small>{count}</small></div><button className="icon-button"><Plus size={17} /></button></div>{items.map((item) => <div className="list-row" key={item}><Globe2 size={15} /><span>{item}</span><MoreHorizontal size={17} /></div>)}<button className="wide-button">Manage {title.toLowerCase()} <ArrowRight size={15} /></button></section>; }
-
-function SettingsPage() { return <AdminPageIntro eyebrow="Admin console / Settings" title="Keep the rules understandable." description="Configure review preferences without changing how the underlying scanner evaluates messages." icon={<Settings2 size={22} />}><section className="panel settings-panel"><SettingRow title="Store mail subjects" description="Keep subjects with reported event metadata for reviewers." checked /><SettingRow title="Require review for unverified links" description="Route incomplete verification results to the admin queue." checked /><SettingRow title="Notify on blocked destination" description="Send an alert when a newly inspected link is blocked." checked={false} /></section></AdminPageIntro>; }
-function SettingRow({ title, description, checked }: { title: string; description: string; checked: boolean }) { return <div className="setting-row"><div><strong>{title}</strong><p>{description}</p></div><div className={`toggle ${checked ? 'toggle-on' : ''}`}><span /></div></div>; }
 
 function GatewayPage({ state, checked, onCheck, onStateChange }: { state: GatewayState; checked: boolean; onCheck: () => void; onStateChange: (s: GatewayState) => void }) { const isBlocked = state === 'blocked'; const isSafe = state === 'safe'; return <section className="gateway-page"><div className="gateway-card"><div className={`gateway-icon gateway-icon-${state}`}>{state === 'blocked' ? <XCircle size={30} /> : state === 'safe' ? <ShieldCheck size={30} /> : state === 'checking' ? <Activity size={30} /> : <AlertTriangle size={30} />}</div><span className="eyebrow">Protected link gateway</span><h1>{state === 'checking' ? 'Checking this link…' : state === 'blocked' ? 'This destination is blocked.' : state === 'safe' ? 'This link passed its checks.' : 'Pause before you continue.'}</h1><p>{state === 'checking' ? 'We are checking the destination and redirect chain. This page will update automatically.' : isBlocked ? 'Safety Guard found a high-risk signal. Do not enter information or continue to the destination.' : isSafe ? 'The configured checks did not find a known threat. Stay alert for requests for passwords, payments, or codes.' : 'This link could not be fully verified. Treat the destination as suspicious until you confirm it through an official channel.'}</p><div className="gateway-url"><Link2 size={16} /><span>https://secure-account-check.com/login</span></div><div className="gateway-checks"><span><CheckCircle2 size={14} /> URL structure</span><span className={state === 'blocked' ? 'check-fail' : ''}>{state === 'blocked' ? <XCircle size={14} /> : <AlertTriangle size={14} />} Reputation lookup</span><span><AlertTriangle size={14} /> Redirect chain</span></div>{!checked && <button className="primary-button gateway-button" onClick={onCheck}>Check destination <ArrowRight size={16} /></button>}{checked && !isBlocked && !isSafe && <div className="gateway-actions"><button className="secondary-button" onClick={() => onStateChange('blocked')}>Keep me safe</button><button className="primary-button" onClick={() => onStateChange('safe')}>Continue anyway <ExternalLink size={15} /></button></div>}{checked && isBlocked && <div className="blocked-note"><LockKeyhole size={15} /> No destination link is provided for blocked results.</div>}{checked && isSafe && <button className="primary-button" onClick={() => onStateChange('caution')}>Return to caution state</button>}<div className="gateway-demo-controls"><span>Demo state</span><button onClick={() => { onStateChange('caution'); }} className={state === 'caution' ? 'active' : ''}>Caution</button><button onClick={() => onStateChange('blocked')} className={state === 'blocked' ? 'active' : ''}>Blocked</button><button onClick={() => onStateChange('safe')} className={state === 'safe' ? 'active' : ''}>Safe</button></div></div></section>; }
 

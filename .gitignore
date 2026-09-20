@@ -8,3 +8,4 @@ data/
 .env*
 !.env.example
 test-out.txt
+CLAUDE_CODE_HANDOFF.md

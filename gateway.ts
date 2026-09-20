@@ -1111,7 +1111,7 @@ export function createGatewayRouter(options: GatewayOptions): Router {
     const daysRaw = Number(str(q.days) || 7);
     const days = [7, 14, 30].includes(daysRaw) ? daysRaw : 7;
     const tabRaw = str(q.tab);
-    const tab: AdminTab = tabRaw === "activity" || tabRaw === "links" ? tabRaw : "overview";
+    const tab: AdminTab = tabRaw === "activity" || tabRaw === "links" || tabRaw === "settings" ? tabRaw : "overview";
     const offsetRaw = Number(str(q.offset) || 0);
     sendHtml(
       res,
@@ -1172,7 +1172,7 @@ export function createGatewayRouter(options: GatewayOptions): Router {
     if (on(body.popup_unverified) === "1") popups.push("UNVERIFIED");
     db.setSetting("popup_verdicts", popups.join(","));
     log(`admin updated mail settings (store_subjects=${db.getSetting("store_subjects", "1")}, popups=${db.getSetting("popup_verdicts", "") || "none"})`);
-    res.redirect(302, "/admin/mail");
+    res.redirect(302, "/admin/mail?tab=settings");
   });
 
   return router;
@@ -1527,12 +1527,12 @@ function renderAdminPage(db: GatewayDb, now: Date): string {
           <a href="/admin/mail"><b>▦</b>Overview</a>
           <a href="/admin/mail?tab=activity"><b>✉</b>Mail activity${db.unreadMailCount() ? `<i>${db.unreadMailCount()}</i>` : ""}</a>
           <a class="active" href="/admin"><b>⊞</b>Allow &amp; block lists</a>
-          <a href="/admin/mail?tab=links#mail-settings"><b>⚙</b>Settings</a>
+          <a href="/admin/mail?tab=settings"><b>⚙</b>Settings</a>
         </nav>
       </aside>
       <main class="admin card">
-      <h1>Link gateway — Allow &amp; block lists</h1>
-      <p>Authenticated as an administrator.</p>
+      <h1>Allow &amp; block lists</h1>
+      <p>Link gateway administration. Authenticated as an administrator.</p>
 
       <h2>Recent links</h2>
       <div class="table-wrap">

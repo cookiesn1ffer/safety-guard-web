@@ -239,6 +239,14 @@ const SG_ADMIN_CSS = `<style>
   .sg-delta.flat { color: var(--sg-muted); }
 
   .sg-grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px; align-items: start; }
+  .sg-grid-2 > .sg-panel { align-self: start; }
+  .sg-stack { display: grid; gap: 14px; align-content: start; }
+  .sg-console-main > .sg-panel + .sg-grid-2,
+  .sg-console-main > .sg-grid-2 + .sg-grid-2,
+  .sg-console-main > .sg-grid-2 + .sg-panel { margin-top: 14px; }
+  .sg-console-main > .sg-presets { margin-bottom: 12px; }
+  .sg-console-main > form.sg-panel.sg-filters { margin-bottom: 14px; }
+  .sg-console-main > div.sg-filters { margin-top: 10px; margin-bottom: 14px; }
   @media (max-width: 860px) { .sg-grid-2 { grid-template-columns: 1fr; } }
   .sg-panel { background: var(--sg-panel); border: 1px solid var(--sg-border); border-radius: 16px; padding: 15px; box-shadow: var(--sg-shadow); }
   .sg-panel h2 { font-size: 14px; margin: 0 0 12px; letter-spacing: 0.02em; }
@@ -366,7 +374,7 @@ const SG_ADMIN_CSS = `<style>
 /* ---------------------------------------------------------------- app HTML */
 
 export type AdminRole = "admin" | "viewer";
-export type AdminTab = "overview" | "activity" | "links";
+export type AdminTab = "overview" | "activity" | "links" | "settings";
 
 export interface AdminFilters {
   provider: string;
@@ -499,13 +507,39 @@ export function renderAdminApp(opts: AdminAppOptions): string {
           <li><span>Errors</span><strong>${stats.totals.error}</strong></li>
         </ul>
       </div>
-      <div class="sg-panel">
-        <h2>What the guard did</h2>
-        ${actionBarsSvg(stats.actions, (a) => ACTION_LABEL[a] || a)}
+      <div class="sg-stack">
+        <div class="sg-panel">
+          <h2>What the guard did</h2>
+          ${actionBarsSvg(stats.actions, (a) => ACTION_LABEL[a] || a)}
+        </div>
+        <div class="sg-panel">
+          <h2>Latest alerts <span class="sg-sub">last 5 non-safe</span></h2>
+          ${
+            alerts.length
+              ? alerts
+                  .map(
+                    (e) => `
+            <div class="sg-alert-row">
+              <div class="sg-alert-head">
+                ${verdictBadge(e.verdict)}
+                <span class="sg-mono">${esc(e.senderDisplay || e.senderDomain || "unknown sender")}</span>
+                ${e.linkCount ? `<span class="sg-muted">${e.linkCount} link(s)</span>` : ""}
+              </div>
+              <div class="sg-subject">${esc(e.subject || "(no subject stored)")}</div>
+              <div><button type="button" class="sg-btn sg-ghost sg-sm" data-view-links="${e.id}" data-sender="${esc(
+                      e.senderDisplay || e.senderDomain || ""
+                    )}" data-subject="${esc(e.subject || "")}" data-verdict="${esc(e.verdict)}" data-action="${esc(
+                      e.action
+                    )}" data-message-ref="${esc(e.messageRef)}" data-link-count="${e.linkCount}">View links</button></div>
+            </div>`
+                  )
+                  .join("")
+              : `<p class="sg-muted">No alerts yet.</p>`
+          }
+        </div>
       </div>
     </div>
-    <div class="sg-grid-2">
-      <div class="sg-panel">
+    <div class="sg-panel">
         <h2>Senders that need attention <span class="sg-sub">top 6, needs review + blocked</span></h2>
         ${
           stats.topSenders.length
@@ -517,32 +551,6 @@ export function renderAdminApp(opts: AdminAppOptions): string {
                 .join("")}</tbody></table></div>`
             : `<p class="sg-muted">Nothing flagged in this range.</p>`
         }
-      </div>
-      <div class="sg-panel">
-        <h2>Latest alerts <span class="sg-sub">last 5 non-safe</span></h2>
-        ${
-          alerts.length
-            ? alerts
-                .map(
-                  (e) => `
-          <div class="sg-alert-row">
-            <div class="sg-alert-head">
-              ${verdictBadge(e.verdict)}
-              <span class="sg-mono">${esc(e.senderDisplay || e.senderDomain || "unknown sender")}</span>
-              ${e.linkCount ? `<span class="sg-muted">${e.linkCount} link(s)</span>` : ""}
-            </div>
-            <div class="sg-subject">${esc(e.subject || "(no subject stored)")}</div>
-            <div><button type="button" class="sg-btn sg-ghost sg-sm" data-view-links="${e.id}" data-sender="${esc(
-                    e.senderDisplay || e.senderDomain || ""
-                  )}" data-subject="${esc(e.subject || "")}" data-verdict="${esc(e.verdict)}" data-action="${esc(
-                    e.action
-                  )}" data-message-ref="${esc(e.messageRef)}" data-link-count="${e.linkCount}">View links</button></div>
-          </div>`
-                )
-                .join("")
-            : `<p class="sg-muted">No alerts yet.</p>`
-        }
-      </div>
     </div>
     <p class="sg-muted">
       Events older than ${retentionDays} days are deleted automatically. Aggregates are computed in SQL — the page never downloads every row.
@@ -703,7 +711,11 @@ export function renderAdminApp(opts: AdminAppOptions): string {
           ? `<div class="sg-table-wrap"><table class="sg-table"><thead><tr><th>Destination</th><th>Status</th><th>Message</th><th>Created</th><th>Override</th></tr></thead><tbody>${linkRows}</tbody></table></div>`
           : `<div class="sg-empty"><h3>No links yet</h3><p>Links appear here once a scanned message references them.</p></div>`
       }
-    </div>
+    </div>`
+    : "";
+
+  const settingsTab = isAdmin
+    ? `
     <div class="sg-panel" id="mail-settings">
       <h2>Mail settings</h2>
       <form method="post" action="/admin/mail/settings" class="sg-settings">
@@ -717,7 +729,7 @@ export function renderAdminApp(opts: AdminAppOptions): string {
     : "";
 
   const body =
-    tab === "overview" ? overview : tab === "activity" ? activity : isAdmin ? linksTab : overview;
+    tab === "overview" ? overview : tab === "activity" ? activity : tab === "settings" ? (isAdmin ? settingsTab : overview) : isAdmin ? linksTab : overview;
 
   const rangeSwitch = `
     <div class="sg-presets">
@@ -775,13 +787,13 @@ ${SG_ADMIN_CSS}
           <a class="${tab === "overview" ? "is-active" : ""}" href="${tabHref("overview")}"><span class="sg-sidebar-icon">▦</span>Overview</a>
           <a class="${tab === "activity" ? "is-active" : ""}" href="${tabHref("activity")}"><span class="sg-sidebar-icon">✉</span>Mail activity ${activityCount}</a>
           ${isAdmin ? `<a href="/admin"><span class="sg-sidebar-icon">⊞</span>Allow &amp; block lists</a>
-          <a class="${tab === "links" ? "is-active" : ""}" href="${tabHref("links")}#mail-settings"><span class="sg-sidebar-icon">⚙</span>Settings</a>` : ""}
+          <a class="${tab === "settings" ? "is-active" : ""}" href="${tabHref("settings")}"><span class="sg-sidebar-icon">⚙</span>Settings</a>` : ""}
         </nav>
       </aside>
       <main class="sg-console-main">
         <header class="sg-header">
-          <div class="sg-title"><h1>Safety Guard Admin</h1><span class="sg-role${role === "admin" ? " is-admin" : ""}">${esc(role)}</span></div>
-          <div class="sg-header-actions">${rangeSwitch}${viewerToggle}<button type="button" class="sg-btn sg-ghost sg-sm" id="sg-theme" aria-pressed="false">Light theme</button></div>
+          <div class="sg-title"><h1>${tab === "overview" ? "Overview" : tab === "activity" ? "Mail Activity" : tab === "settings" ? "Settings" : "Link Review"}</h1><span class="sg-role${role === "admin" ? " is-admin" : ""}">${esc(role)}</span></div>
+          <div class="sg-header-actions">${tab === "overview" || tab === "activity" ? rangeSwitch : ""}${viewerToggle}<button type="button" class="sg-btn sg-ghost sg-sm" id="sg-theme" aria-pressed="false">Light theme</button></div>
         </header>
         ${body}
       </main>
