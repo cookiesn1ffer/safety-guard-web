@@ -886,7 +886,9 @@ Provide the analysis as valid JSON matching the exact schema.`;
     }
     parts.push({ text: promptText });
 
-    const response = await ai.models.generateContent({
+    let analyzeTimer: NodeJS.Timeout | undefined;
+    const response: any = await Promise.race([
+      ai.models.generateContent({
       model: "gemini-3.8-flash",
       contents: { parts },
       config: {
@@ -988,7 +990,13 @@ Provide the analysis as valid JSON matching the exact schema.`;
           ],
         },
       },
-    });
+      }),
+      new Promise((_resolve, reject) => {
+        analyzeTimer = setTimeout(() => reject(new Error("ai-timeout")), GEMINI_TIMEOUT_MS);
+        analyzeTimer.unref?.();
+      }),
+    ]);
+    if (analyzeTimer) clearTimeout(analyzeTimer);
 
     const parsed = JSON.parse(response.text || "{}");
     // Combine ALL signals: Gemini supplies semantic reasoning/explanation, the
